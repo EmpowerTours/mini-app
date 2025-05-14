@@ -1,0 +1,18 @@
+{
+  "name": "empowertours-mini-app",
+  "version": "1.0.0",
+  "description": "Privy Mini App for EmpowerToursBot",
+  "scripts": {
+    "start": "vite",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "@privy-io/react-auth": "^1.22.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "vite": "^4.3.9",
+    "@vitejs/plugin-react": "^4.0.0"
+  }
+}
