@@ -19,7 +19,7 @@ const App = () => {
       await login();
       if (authenticated && user && user.wallet) {
         const walletAddress = user.wallet.address;
-        const response = await fetch('http://localhost:3000/auth', {
+        const response = await fetch('https://mini-app-w2nf.onrender.com', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
