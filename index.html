@@ -1,19 +1,119 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>EmpowerTours Wallet Connect</title>
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <style>
-    body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
-    button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EmpowerTours Wallet Connect</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
+            text-align: center;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #status {
+            margin-top: 20px;
+            color: #333;
+        }
+        #error {
+            margin-top: 20px;
+            color: red;
+        }
+    </style>
 </head>
 <body>
-  <h1>EmpowerTours Wallet Connect</h1>
-  <div id="privy-login"></div>
-  <p id="status">Connecting...</p>
-  <script type="module" src="/app.jsx"></script>
+    <div class="container">
+        <h1>Connect MetaMask</h1>
+        <button onclick="connectWallet()">Connect Wallet</button>
+        <div id="status"></div>
+        <div id="error"></div>
+    </div>
+
+    <script>
+        async function connectWallet() {
+            const status = document.getElementById('status');
+            const errorDiv = document.getElementById('error');
+            status.textContent = '';
+            errorDiv.textContent = '';
+
+            if (!window.ethereum) {
+                errorDiv.textContent = 'MetaMask is not installed. Please install the MetaMask extension.';
+                return;
+            }
+
+            try {
+                // Request MetaMask account access
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                if (accounts.length === 0) {
+                    errorDiv.textContent = 'No accounts found. Please unlock MetaMask and try again.';
+                    return;
+                }
+
+                const walletAddress = accounts[0];
+                status.textContent = `Connected wallet: ${walletAddress}`;
+
+                // Send wallet address to backend
+                const response = await fetch('https://mini-app-w2nf.onrender.com/auth', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        telegramId: '7897807205', // Replace with dynamic Telegram ID if available
+                        walletAddress: walletAddress,
+                        loginMethod: 'metamask'
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Backend error: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                status.textContent = `Successfully authenticated! Wallet: ${data.address || walletAddress}`;
+            } catch (error) {
+                errorDiv.textContent = `Error: ${error.message}`;
+                console.error('Wallet connection error:', error);
+            }
+        }
+
+        // Check if MetaMask is connected on page load
+        window.addEventListener('load', async () => {
+            if (window.ethereum) {
+                try {
+                    const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                    if (accounts.length > 0) {
+                        document.getElementById('status').textContent = `Already connected: ${accounts[0]}`;
+                    }
+                } catch (error) {
+                    console.error('Error checking MetaMask connection:', error);
+                }
+            }
+        });
+    </script>
 </body>
 </html>
