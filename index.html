@@ -52,6 +52,10 @@
     </div>
 
     <script>
+        // Get telegramId from URL query parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const telegramId = urlParams.get('telegramId') || 'unknown';
+
         async function connectWallet() {
             const status = document.getElementById('status');
             const errorDiv = document.getElementById('error');
@@ -79,17 +83,23 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        telegramId: '7897807205', // Replace with dynamic Telegram ID if available
+                        telegramId: telegramId,
                         walletAddress: walletAddress,
                         loginMethod: 'metamask'
                     })
                 });
 
                 if (!response.ok) {
-                    throw new Error(`Backend error: ${response.statusText}`);
+                    throw new Error(`Backend error: ${response.statusText} (${response.status})`);
                 }
 
-                const data = await response.json();
+                let data;
+                try {
+                    data = await response.json();
+                } catch (jsonError) {
+                    throw new Error('Invalid JSON response from backend');
+                }
+
                 if (data.error) {
                     throw new Error(data.error);
                 }
